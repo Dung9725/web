@@ -1,3 +1,4 @@
+mariadb_data/
+nodered_data/
 .env
 *.log
-.DS_Store

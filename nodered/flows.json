@@ -1,0 +1,59 @@
+[
+    {
+        "id": "ba50c24edf80380e",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "681f171472db5ccb",
+        "type": "http in",
+        "z": "ba50c24edf80380e",
+        "name": "",
+        "url": "/api/tacke",
+        "method": "get",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 200,
+        "y": 360,
+        "wires": [
+            [
+                "c059f06fcc302365"
+            ]
+        ]
+    },
+    {
+        "id": "c059f06fcc302365",
+        "type": "function",
+        "z": "ba50c24edf80380e",
+        "name": "function 1",
+        "func": "// 1. Dữ liệu danh sách sinh viên gốc\nlet danhSach = [\n    { name: \"Cốp\", money: 123 },\n    { name: \"David\", money: 456 },\n    { name: \"An\", money: 789 },\n    { name: \"Bình\", money: 50 }\n];\n\n// 2. Thuật toán tự nghĩ: Lọc theo tham số ?min=... trên URL và xếp hạng\nlet minMoney = Number(msg.req.query.min) || 0;\nlet ketQua = danhSach.filter(sv => sv.money >= minMoney);\n\n// Sắp xếp giảm dần theo số tiền\nketQua.sort((a, b) => b.money - a.money);\n\n// Gắn thêm xếp loại VIP / Thường\nketQua = ketQua.map(sv => ({\n    name: sv.name,\n    money: sv.money,\n    rank: sv.money >= 400 ? \"VIP\" : \"Thường\"\n}));\n\n// Tính tổng tiền\nlet tongTien = ketQua.reduce((sum, sv) => sum + sv.money, 0);\n\n// 3. Đóng gói dữ liệu JSON trả về theo chuẩn đề bài\nmsg.payload = {\n    ok: 1,\n    msg: \"thành công\",\n    tong_tien: tongTien,\n    dssv: ketQua\n};\n\nmsg.headers = {\n    \"Content-Type\": \"application/json; charset=utf-8\"\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 360,
+        "wires": [
+            [
+                "7346a2c061dd2a87"
+            ]
+        ]
+    },
+    {
+        "id": "7346a2c061dd2a87",
+        "type": "http response",
+        "z": "ba50c24edf80380e",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 610,
+        "y": 360,
+        "wires": []
+    }
+]

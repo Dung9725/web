@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài tập 2 - Gọi API Node-RED</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 650px; margin: 40px auto; padding: 0 15px; }
+        .controls { margin-bottom: 15px; display: flex; gap: 10px; }
+        input, button { padding: 8px 12px; font-size: 14px; }
+        button { cursor: pointer; background: #0066cc; color: white; border: none; border-radius: 4px; }
+        button:hover { background: #004c99; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f4f4f4; }
+        .status { margin-top: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h2>Danh sách sinh viên từ API Node-RED (web1.bt1.id.vn)</h2>
+
+    <div class="controls">
+        <input type="number" id="minMoney" placeholder="Lọc số tiền tối thiểu (VD: 100)">
+        <button onclick="taiDuLieu()">Tải dữ liệu API</button>
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Tên sinh viên</th>
+                <th>Số tiền (Money)</th>
+                <th>Xếp loại</th>
+            </tr>
+        </thead>
+        <tbody id="bang-dssv">
+            <tr><td colspan="4">Đang tải dữ liệu...</td></tr>
+        </tbody>
+    </table>
+
+    <script>
+        async function taiDuLieu() {
+            const minVal = document.getElementById('minMoney').value;
+            const statusEl = document.getElementById('status');
+            const tbody = document.getElementById('bang-dssv');
+
+            let apiUrl = '/api/tacke';
+            if (minVal) {
+                apiUrl += `?min=${encodeURIComponent(minVal)}`;
+            }
+
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    throw new Error(`Lỗi HTTP: ${response.status}`);
+                }
+                const data = await response.json();
+
+                if (data.ok === 1) {
+                    statusEl.style.color = 'green';
+                    statusEl.textContent = `Trạng thái: ${data.msg} | Tổng tiền: ${data.tong_tien}`;
+
+                    tbody.innerHTML = '';
+                    data.dssv.forEach((sv, index) => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${sv.name}</td>
+                                <td>${sv.money}</td>
+                                <td>${sv.rank}</td>
+                            </tr>`;
+                    });
+                } else {
+                    statusEl.style.color = 'red';
+                    statusEl.textContent = 'API trả về trạng thái thất bại!';
+                }
+            } catch (error) {
+                statusEl.style.color = 'red';
+                statusEl.textContent = 'Không thể kết nối tới API: ' + error.message;
+                tbody.innerHTML = '<tr><td colspan="4">Lỗi tải dữ liệu</td></tr>';
+            }
+        }
+
+        window.onload = taiDuLieu;
+    </script>
+</body>
+</html>
